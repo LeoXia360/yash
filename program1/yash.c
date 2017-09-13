@@ -37,7 +37,7 @@ int main() {
 					|| strcmp(currentArg, "2>") == 0)) {
 				printf("Firstarg: %s\n", firstArg);
 				foundFirstArg = 1;	
-				pid_ch1 = fork();
+		/*		pid_ch1 = fork();
 				if (pid_ch1 == 0) {
 					while (currentArg != NULL) {
 						previousArg = currentArg;
@@ -57,7 +57,7 @@ int main() {
 							currentArg = strtok(NULL, whitespace);
 						}
 					}
-	//				execvp(firstArg, argv);
+	//				execvp(firstArg, argv);*/
 				}
 			} else if (foundFirstArg == 0) {
 				strcat(firstArg, " ");
