@@ -29,8 +29,8 @@ int main () {
 		//argument parsing
 		strtok(argv, "\n");
 		currentArg = strtok(argv, whitespace);
+		strcat(firstArg, currentArg);
 		while (currentArg != NULL) {
-			printf("The currentArg: %s\n", currentArg);
 			previousArg = currentArg;
 			currentArg = strtok(NULL, whitespace);
 			//load file redirection locations
@@ -43,6 +43,19 @@ int main () {
 			if (strcmp(previousArg, "2>") == 0) {
 				errFile = currentArg;
 			}
+			if (currentArg != NULL) {	
+				//find first arg
+				if (foundFirstArg == 0
+					&& (strcmp(currentArg, "<") == 0
+						|| strcmp(currentArg, ">") == 0
+						|| strcmp(currentArg, "2>") == 0)) {
+					printf("firstArg: %s\n", firstArg);
+					foundFirstArg = 1;
+				} else if (foundFirstArg == 0) {
+					strcat(firstArg, " ");
+					strcat(firstArg, currentArg);
+				}
+			}
 		}
 
 		//replace spaces in argv with null terminating chars
@@ -53,12 +66,12 @@ int main () {
         	}
         	i++;
 		}
-/*
+	/*	
 		//fork for file redirection
 		pid_redirect = fork();
 		if (pid_redirect == 0) {
 			//child code
-			
+						
 		}
 */
 		// reset args, get ready for next user input
