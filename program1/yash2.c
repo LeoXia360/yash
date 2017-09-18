@@ -51,7 +51,7 @@ int main () {
 		strtok(argv, "\n");
 		currentArg = strtok(argv, whitespace);
 		args[count] = currentArg;
-		printf("args[%d]: %s\n", count, args[count]);
+	//	printf("args[%d]: %s\n", count, args[count]);
 		count += 1;
 		while (currentArg != NULL) {
 			previousArg = currentArg;
@@ -63,7 +63,7 @@ int main () {
 			}
 			if (isPipe == 1) {
 				args2[count2] = currentArg;
-				printf("args2[%d]: %s\n", count2, args2[count2]);
+	//			printf("args2[%d]: %s\n", count2, args2[count2]);
 				count2++;
 			}
 
@@ -89,10 +89,10 @@ int main () {
 						|| strcmp(currentArg, "|") == 0)) {
 					foundFirstArg = 1;
 					args[count] = NULL;
-					printf("args[%d]: %s\n", count, args[count]);
+	//				printf("args[%d]: %s\n", count, args[count]);
 				} else if (foundFirstArg == 0) {
 					args[count] = currentArg;
-					printf("args[%d]: %s\n", count, args[count]);
+	//				printf("args[%d]: %s\n", count, args[count]);
 					count += 1;
 				}
 			}
@@ -164,6 +164,9 @@ void run_file_redirection() {
 		} else if (pid_redirect == -1) {
 			perror("waitpid");
 	  		exit(EXIT_FAILURE);
+		} else {
+			// parent
+			wait(NULL);
 		}
 	}
 }
