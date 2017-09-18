@@ -13,6 +13,7 @@ const char whitespace[2] = " ";
 int pipefd[2];
 int status, pid_ch1, pid_ch2, pid;
 int pid_redirect;
+int pid_default;
 char argv[BUFFER_SIZE];
 char *inFile = NULL;
 char *outFile = NULL;
@@ -38,6 +39,8 @@ static void sig_tstp(int signo) {
 void run_file_redirection();
 
 void run_pipe();
+
+void run_default_exec();
 
 int main () {
 	while (1) {
@@ -109,11 +112,11 @@ int main () {
 		//Create a child for file redirection
 		if (isFileRedirection == 1) {
 			run_file_redirection();		
-		}
-
-		//Create children for pipeing
-		if (isPipe == 1) {
+		} else if (isPipe == 1) {
+			//Create children for pipeing
 			run_pipe();
+		} else {
+			run_default_exec();	
 		}
 
 		// reset args, get ready for next user input
@@ -235,4 +238,13 @@ void run_pipe() {
     	dup2(pipefd[1],STDOUT_FILENO);
     	execvp(args[0], args);  // runs top
   	}
+}
+
+void run_default_exec() {
+	pid_default = fork();
+	if (pid_default == 0) {
+		execvp(args[0], args);		
+	} else {
+		wait(NULL);
+	}
 }
