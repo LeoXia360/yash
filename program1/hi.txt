@@ -1,7 +1,14 @@
-total 64
--rw-r--r--  1 leoxia  staff      0 Sep 17 16:33 hi.txt
+hi.txt
+todo.txt
+yash
+yash.c
+yash2
+yash2.c
+yash2.dSYM
+:39 hi.txt
+-rw-r--r--  1 leoxia  staff     21 Sep 17 17:08 todo.txt
 -rwxr-xr-x  1 leoxia  staff   9420 Sep 11 23:07 yash
 -rw-r--r--  1 leoxia  staff   1859 Sep 17 13:38 yash.c
--rwxr-xr-x  1 leoxia  staff  10132 Sep 17 16:33 yash2
--rw-r--r--  1 leoxia  staff   2893 Sep 17 16:33 yash2.c
+-rwxr-xr-x  1 leoxia  staff  10828 Sep 17 21:47 yash2
+-rw-r--r--  1 leoxia  staff   3663 Sep 17 21:47 yash2.c
 drwxr-xr-x@ 3 leoxia  staff    102 Sep 17 13:43 yash2.dSYM
