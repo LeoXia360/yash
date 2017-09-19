@@ -28,12 +28,18 @@ int isPipe = 0;
 int isFileRedirection = 0;
 
 static void sig_int(int signo) {
-  printf("Sending signals to group:%d\n",pid_ch1); // group id is pid of first in pipeline
-  kill(-pid_ch1,SIGINT);
+ 	 printf("Sending signals to group:%d\n",pid_ch1); // group id is pid of first in pipeline
+  	 kill(-pid_ch1,SIGINT);
+//	signal(SIGINT, SIG_IGN);
+//   	kill(-pid_ch1, SIGTERM);
 }
 static void sig_tstp(int signo) {
   printf("Sending SIGTSTP to group:%d\n",pid_ch1); // group id is pid of first in pipeline
   kill(-pid_ch1,SIGTSTP);
+}
+static void sig_cont(int signo) {
+	printf("Continuing %d\n",pid);
+	kill(pid,SIGCONT);
 }
 
 void run_file_redirection();
@@ -42,11 +48,20 @@ void run_pipe();
 
 void run_default_exec();
 
+void main_init() {
+	printf("main_init call");
+	signal(SIGINT, SIG_IGN);
+	signal(SIGTSTP, SIG_IGN);
+}
+
 int main () {
+	main_init();
 	while (1) {
 		//get argument input
 		printf("# ");
-		fgets(argv, BUFFER_SIZE, stdin);
+		if (fgets(argv, BUFFER_SIZE, stdin) == NULL) {
+			exit(1);
+		}
 		
 		//argument parsing
 		int count = 0;
@@ -191,6 +206,8 @@ void run_pipe() {
 				printf("signal(SIGINT) error");
       		if (signal(SIGTSTP, sig_tstp) == SIG_ERR)
 				printf("signal(SIGTSTP) error");
+			if (signal(SIGCONT, sig_cont) == SIG_ERR)
+				printf("signal(SIGCONT) error");
       		close(pipefd[0]); //close the pipe in the parent
      		close(pipefd[1]);
       		int count = 0;
@@ -207,8 +224,7 @@ void run_pipe() {
 	  				perror("waitpid");
 	  				exit(EXIT_FAILURE);
 				}
-	
-				if (WIFEXITED(status)) {
+      			if (WIFEXITED(status)) {
 	  				printf("child %d exited, status=%d\n", pid, WEXITSTATUS(status));count++;
 				} else if (WIFSIGNALED(status)) {
 	  				printf("child %d killed by signal %d\n", pid, WTERMSIG(status));count++;
@@ -220,9 +236,9 @@ void run_pipe() {
 				} else if (WIFCONTINUED(status)) {
 	  				printf("Continuing %d\n",pid);
 				}
-      		}	
-      		exit(1);
-    	}else {
+			}	
+      		//exit(1);
+    	} else {
       		//Child 2
       		sleep(1);
       		setpgid(0,pid_ch1); //child2 joins the group whose group id is same as child1's pid
