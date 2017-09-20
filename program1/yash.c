@@ -26,6 +26,28 @@ char* args[BUFFER_SIZE];
 char* args2[BUFFER_SIZE];
 int isPipe = 0;
 int isFileRedirection = 0;
+int mostRecentPID = -1;
+int processStack[100];
+const int MAX_PROCESS_STACK_SIZE = 100;
+int processStackTop = -1;
+
+static void sig_do_nothing(int signo) {
+}
+int isEmpty();
+
+int isFull();
+
+int peek();
+
+int pop();
+
+void push(int value); 
+ 
+void run_file_redirection();
+
+void run_pipe();
+
+void run_default_exec();
 
 static void sig_int(int signo) {
   printf("Sending signals to group:%d\n",pid_ch1); // group id is pid of first in pipeline
@@ -34,16 +56,9 @@ static void sig_int(int signo) {
 static void sig_tstp(int signo) {
   printf("Sending SIGTSTP to group:%d\n",pid_ch1); // group id is pid of first in pipeline
   kill(-pid_ch1,SIGTSTP);
+  push(pid_ch1);
+  return;
 }
-static void sig_cont(int signo) {
-	printf("Sending CONT to %d\n", pid);
-	kill(pid,SIGCONT);
-}
-void run_file_redirection();
-
-void run_pipe();
-
-void run_default_exec();
 
 void init_main() {
 	signal(SIGINT, SIG_IGN);
@@ -51,10 +66,17 @@ void init_main() {
 }
 
 int main () {
+
+    if (signal(SIGINT, sig_do_nothing) == SIG_ERR)
+		printf("signal(SIGINT) error");
+    if (signal(SIGTSTP, sig_do_nothing) == SIG_ERR)
+		printf("signal(SIGTSTP) error");
 	while (1) {
 		//get argument input
 		printf("# ");
-		fgets(argv, BUFFER_SIZE, stdin);
+		if(fgets(argv, BUFFER_SIZE, stdin) == NULL) {
+			exit(1);
+		}
 		
 		//argument parsing
 		int count = 0;
@@ -67,6 +89,25 @@ int main () {
 		while (currentArg != NULL) {
 			previousArg = currentArg;
 			currentArg = strtok(NULL, whitespace);
+			
+			if (currentArg == NULL && strcmp(previousArg, "&") == 0) {
+				//send to background
+			}
+			
+			if (strcmp(previousArg, "fg") == 0 && mostRecentPID != -1) {
+				kill(mostRecentPID, SIGCONT);
+				//Set new most recent PID							
+				if (pop() != -1) {
+					printf("mostRecentPID: %d\n", mostRecentPID);
+					if (!isEmpty()) {
+						mostRecentPID = peek(); 
+					} else {
+						mostRecentPID = -1;
+					}
+				} else {
+					printf("Invalid pop, mostRecentPID: %d\n", mostRecentPID);
+				}
+			}
 
 			//Checking for pipes
 			if (strcmp(previousArg, "|") == 0) {
@@ -195,9 +236,9 @@ void run_pipe() {
     	pid_ch2 = fork();
     	if (pid_ch2 > 0) {
       		printf("Child2 pid = %d\n", pid_ch2);
-      		if (signal(SIGINT, sig_int) == SIG_ERR)
+    		if (signal(SIGINT, sig_int) == SIG_ERR)
 				printf("signal(SIGINT) error");
-      		if (signal(SIGTSTP, sig_tstp) == SIG_ERR)
+    		if (signal(SIGTSTP, sig_tstp) == SIG_ERR)
 				printf("signal(SIGTSTP) error");
       		close(pipefd[0]); //close the pipe in the parent
      		close(pipefd[1]);
@@ -222,6 +263,7 @@ void run_pipe() {
 	  				printf("child %d killed by signal %d\n", pid, WTERMSIG(status));count++;
 				} else if (WIFSTOPPED(status)) {
 	  				printf("%d stopped by signal %d\n", pid,WSTOPSIG(status));
+					mostRecentPID = pid;
 					return;
 				} else if (WIFCONTINUED(status)) {
 	  				printf("Continuing %d\n",pid);
@@ -254,3 +296,53 @@ void run_default_exec() {
 		wait(NULL);
 	}
 }
+
+int isEmpty() {
+	if (processStackTop == -1) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+int isFull() {
+	if (processStackTop == MAX_PROCESS_STACK_SIZE) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+int pop() {
+	int value;
+	if (!isEmpty()) {
+		value = processStack[processStackTop];
+		processStackTop -= 1;
+		return value;
+	}
+	return -1;
+}
+
+void push(int value) {
+	if (!isFull()) {
+		processStackTop += 1;
+		processStack[processStackTop] = value;
+	}
+}	
+
+int peek() {
+	return processStack[processStackTop];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
