@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-const int BUFFER_SIZE = 2001;
+#define BUFFER_SIZE 2001
 const char whitespace[2] = " ";
 int pipefd[2];
 int status, pid_ch1, pid_ch2, pid;
